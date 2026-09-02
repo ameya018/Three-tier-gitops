@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: frontend
+
+  template:
+    metadata:
+      labels:
+        app: frontend
+
+    spec:
+      containers:
+      - name: frontend
+
+        image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/frontend:9
+
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 3000
