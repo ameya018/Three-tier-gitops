@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+
 spec:
   replicas: 2
 
@@ -19,8 +20,26 @@ spec:
       - name: backend
 
         image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/backend:9
-
         imagePullPolicy: Always
 
         ports:
         - containerPort: 3500
+
+        env:
+        - name: MONGO_CONN_STR
+          value: mongodb://mongodb:27017/todo?authSource=admin
+
+        - name: USE_DB_AUTH
+          value: "true"
+
+        - name: MONGO_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: MONGO_INITDB_ROOT_USERNAME
+
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: MONGO_INITDB_ROOT_PASSWORD
