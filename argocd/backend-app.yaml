@@ -1,5 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
+
 metadata:
   name: backend
   namespace: argocd
@@ -8,7 +9,7 @@ spec:
   project: default
 
   source:
-    repoURL: git@github.com:ameya018/three-tier-gitops.git
+    repoURL: https://github.com/ameya018/Three-tier-gitops.git
     targetRevision: main
     path: backend
 
@@ -20,6 +21,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-
-    syncOptions:
-      - CreateNamespace=true

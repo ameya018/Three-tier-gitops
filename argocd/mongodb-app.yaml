@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 
 metadata:
-  name: frontend
+  name: mongodb
   namespace: argocd
 
 spec:
@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/ameya018/Three-tier-gitops.git
     targetRevision: main
-    path: frontend
+    path: mongodb
 
   destination:
     server: https://kubernetes.default.svc

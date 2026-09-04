@@ -1,7 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
+
 metadata:
   name: frontend
+  namespace: three-tier
 
 spec:
   replicas: 2
@@ -25,3 +27,12 @@ spec:
 
         ports:
         - containerPort: 80
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+
+          limits:
+            cpu: 300m
+            memory: 256Mi
