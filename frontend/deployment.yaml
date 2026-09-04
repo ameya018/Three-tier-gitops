@@ -21,7 +21,7 @@ spec:
       containers:
       - name: frontend
 
-        image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/frontend:20
+        image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/frontend:21
 
         imagePullPolicy: Always
 
