@@ -1,0 +1,38 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: custom-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+
+spec:
+  groups:
+  - name: custom-alerts
+
+    rules:
+
+    - alert: NodeDown
+      expr: up{job="node-exporter"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: Node is down
+
+    - alert: HighCPUUsage
+      expr: (100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: CPU usage above 80%
+
+    - alert: DeploymentReplicasMissing
+      expr: kube_deployment_status_replicas_available < kube_deployment_spec_replicas
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: Deployment replicas unavailable
+
