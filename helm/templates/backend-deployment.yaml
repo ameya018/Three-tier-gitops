@@ -8,6 +8,12 @@ metadata:
 spec:
   replicas: 2
 
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
   selector:
     matchLabels:
       app: backend
@@ -46,6 +52,18 @@ spec:
             secretKeyRef:
               name: mongodb-secret
               key: MONGO_INITDB_ROOT_PASSWORD
+
+        readinessProbe:
+          tcpSocket:
+            port: 3500
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+        livenessProbe:
+          tcpSocket:
+            port: 3500
+          initialDelaySeconds: 30
+          periodSeconds: 10
 
         resources:
           requests:

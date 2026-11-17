@@ -8,6 +8,9 @@ metadata:
 spec:
   replicas: 1
 
+  strategy:
+    type: RollingUpdate
+
   selector:
     matchLabels:
       app: mongodb
@@ -38,6 +41,18 @@ spec:
             secretKeyRef:
               name: mongodb-secret
               key: MONGO_INITDB_ROOT_PASSWORD
+
+        readinessProbe:
+          tcpSocket:
+            port: 27017
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+        livenessProbe:
+          tcpSocket:
+            port: 27017
+          initialDelaySeconds: 30
+          periodSeconds: 10
 
         resources:
           requests:

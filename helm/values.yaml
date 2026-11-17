@@ -1,0 +1,8 @@
+frontend:
+  image: ameya318/frontend:latest
+
+backend:
+  image: ameya318/backend:latest
+
+mongodb:
+  image: mongo:7
