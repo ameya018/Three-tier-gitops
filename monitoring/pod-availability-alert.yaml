@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-availability-alert
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: pod-availability
+      rules:
+        - alert: PodUnavailable
+          expr: kube_pod_status_ready{namespace="three-tier",condition="true"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod is not ready"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is not ready."
