@@ -1,75 +1,101 @@
+
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: backend
   namespace: three-tier
-
 spec:
-  replicas: 2
-
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
-
   selector:
     matchLabels:
       app: backend
-
   template:
     metadata:
       labels:
         app: backend
-
     spec:
       containers:
-      - name: backend
-
-        image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/backend:40
-
-        imagePullPolicy: Always
-
-        ports:
-        - containerPort: 3500
-
-        env:
-        - name: MONGO_CONN_STR
-          value: mongodb://mongodb:27017/todo?authSource=admin
-
-        - name: USE_DB_AUTH
-          value: "true"
-
-        - name: MONGO_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: MONGO_INITDB_ROOT_USERNAME
-
-        - name: MONGO_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: MONGO_INITDB_ROOT_PASSWORD
-
-        readinessProbe:
-          tcpSocket:
-            port: 3500
-          initialDelaySeconds: 10
-          periodSeconds: 5
-
-        livenessProbe:
-          tcpSocket:
-            port: 3500
-          initialDelaySeconds: 30
-          periodSeconds: 10
-
-        resources:
-          requests:
-            cpu: 200m
-            memory: 256Mi
-
-          limits:
-            cpu: 500m
-            memory: 512Mi
+        - name: backend
+          image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/backend:40
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3500
+          env:
+            - name: MONGO_CONN_STR
+              value: mongodb://mongodb:27017/todo?authSource=admin
+            - name: USE_DB_AUTH
+              value: "true"
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: MONGO_INITDB_ROOT_PASSWORD
+          readinessProbe:
+            tcpSocket:
+              port: 3500
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 3500
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 200m
+              memory: 512Mi
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: three-tier
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: backend-vpa
+  namespace: three-tier
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  updatePolicy:
+    updateMode: Auto
+  resourcePolicy:
+    containerPolicies:
+      - containerName: backend
+        minAllowed:
+          memory: 128Mi
+        maxAllowed:
+          memory: 1Gi
+        controlledResources:
+          - memory
+        controlledValues: RequestsOnly
