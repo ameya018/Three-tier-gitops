@@ -49,6 +49,7 @@ alertmanager:
   enabled: true
   alertmanagerSpec:
     replicas: 1
+    configSecret: alertmanager-custom
     resources:
       requests:
         cpu: 100m
