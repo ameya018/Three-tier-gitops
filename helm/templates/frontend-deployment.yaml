@@ -1,58 +1,88 @@
+
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: frontend
   namespace: three-tier
-
 spec:
-  replicas: 2
-
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
-
   selector:
     matchLabels:
       app: frontend
-
   template:
     metadata:
       labels:
         app: frontend
-
     spec:
       containers:
-      - name: frontend
-
-        image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/frontend:40
-
-        imagePullPolicy: Always
-
-        ports:
-        - containerPort: 80
-
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 5
-
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 30
-          periodSeconds: 10
-
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-
-          limits:
-            cpu: 300m
-            memory: 256Mi
+        - name: frontend
+          image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/frontend:40
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: three-tier
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: frontend-vpa
+  namespace: three-tier
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: frontend
+        minAllowed:
+          memory: 64Mi
+        maxAllowed:
+          memory: 1Gi
+        controlledResources:
+          - memory
+        controlledValues: RequestsOnly
