@@ -1,4 +1,3 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -51,10 +50,10 @@ spec:
             periodSeconds: 10
           resources:
             requests:
-              cpu: 200m
+              cpu: 250m
               memory: 256Mi
             limits:
-              cpu: 200m
+              cpu: 500m
               memory: 512Mi
 ---
 apiVersion: autoscaling/v2
@@ -88,7 +87,7 @@ spec:
     kind: Deployment
     name: backend
   updatePolicy:
-    updateMode: Auto
+    updateMode: Recreate
   resourcePolicy:
     containerPolicies:
       - containerName: backend
