@@ -5,15 +5,71 @@ metadata:
   namespace: monitoring
   labels:
     release: monitoring
+
 spec:
   groups:
-    - name: pod-availability
+    - name: three-tier-availability
+      interval: 30s
       rules:
-        - alert: PodUnavailable
-          expr: kube_pod_status_ready{namespace="three-tier",condition="true"} == 0
+
+        # 1. Pod remains unready
+        - alert: PodNotReady
+          expr: |
+            kube_pod_status_ready{
+              namespace="three-tier",
+              condition="true"
+            } == 0
+          for: 3m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod is not ready"
+            description: "Pod {{ $labels.pod }} has remained unready for 3 minutes."
+
+        # 2. Deployment has unavailable replicas
+        - alert: DeploymentUnavailable
+          expr: |
+            kube_deployment_spec_replicas{
+              namespace="three-tier"
+            }
+            >
+            kube_deployment_status_replicas_available{
+              namespace="three-tier"
+            }
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Deployment has unavailable replicas"
+            description: "Deployment {{ $labels.deployment }} has fewer available replicas than desired for 3 minutes."
+
+        # 3. Deployment rollout exceeded progress deadline
+        - alert: DeploymentRolloutStuck
+          expr: |
+            kube_deployment_status_condition{
+              namespace="three-tier",
+              condition="Progressing",
+              status="false",
+              reason="ProgressDeadlineExceeded"
+            } == 1
           for: 1m
           labels:
             severity: critical
           annotations:
-            summary: "Pod is not ready"
-            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is not ready."
+            summary: "Deployment rollout is stuck"
+            description: "Deployment {{ $labels.deployment }} exceeded its rollout progress deadline."
+
+        # 4. Repeated container restarts
+        - alert: ContainerRestarting
+          expr: |
+            increase(
+              kube_pod_container_status_restarts_total{
+                namespace="three-tier"
+              }[5m]
+            ) > 2
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container repeatedly restarting"
+            description: "Container {{ $labels.container }} in Pod {{ $labels.pod }} restarted more than twice in 5 minutes."
