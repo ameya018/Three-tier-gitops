@@ -87,7 +87,7 @@ spec:
     kind: Deployment
     name: backend
   updatePolicy:
-    updateMode: Auto
+    updateMode: "Auto"
   resourcePolicy:
     containerPolicies:
       - containerName: backend
