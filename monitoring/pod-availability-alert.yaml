@@ -73,15 +73,28 @@ spec:
           annotations:
             summary: "Container repeatedly restarting"
             description: "Container {{ $labels.container }} in Pod {{ $labels.pod }} restarted more than twice in 5 minutes."
-        # 5. Backend or frontend Pod recreated
-        - alert: AppPodRecreated
+        # 5. Backend Pod recreated
+        - alert: BackendPodRecreated
           expr: |
             kube_pod_created{
               namespace="three-tier",
-              pod=~"(backend|frontend)-.*"
+              pod=~"backend-.*"
             } > (time() - 120)
           labels:
             severity: info
           annotations:
-            summary: "Application Pod recreated"
-            description: "A new {{ $labels.pod }} Pod was created in the three-tier application."
+            summary: "Backend Pod recreated"
+            description: "A new backend Pod {{ $labels.pod }} was created."
+
+        # 6. Frontend Pod recreated
+        - alert: FrontendPodRecreated
+          expr: |
+            kube_pod_created{
+              namespace="three-tier",
+              pod=~"frontend-.*"
+            } > (time() - 120)
+          labels:
+            severity: info
+          annotations:
+            summary: "Frontend Pod recreated"
+            description: "A new frontend Pod {{ $labels.pod }} was created."
