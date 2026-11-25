@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/backend:43
+          image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/backend:44
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3500

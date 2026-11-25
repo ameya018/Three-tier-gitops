@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/frontend:43
+          image: 610269527042.dkr.ecr.ap-south-1.amazonaws.com/three-tier/frontend:44
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
