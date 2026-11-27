@@ -98,3 +98,16 @@ spec:
           annotations:
             summary: "Frontend Pod recreated"
             description: "A new frontend Pod {{ $labels.pod }} was created."
+
+        # 7. MongoDB Pod recreated
+        - alert: MongoDBPodRecreated
+          expr: |
+            kube_pod_created{
+              namespace="three-tier",
+              pod=~"mongodb-.*"
+            } > (time() - 120)
+          labels:
+            severity: info
+          annotations:
+            summary: "MongoDB Pod recreated"
+            description: "A new MongoDB Pod {{ $labels.pod }} was created."
